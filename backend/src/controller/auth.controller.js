@@ -42,14 +42,29 @@ async function userSignup(req,res){
     if(!email || !password){
         return res.status(401).json({message:"give all details "})
     }
-    const user=await userModel.findOne({email})
+  try{
+      const user=await userModel.findOne({email})
     if(!user)  return res.status(401).json({message:"user not found"})
     
     const ispasswordLegit=await user.comparePassword(password)
-    if(!ispasswordLegit) return res.status(401).json({message:"password is not correct"}
-
-        
-    )
+    if(!ispasswordLegit) return res.status(401).json({message:"password is not correct"})
+   const token=jwt.sign({userid:user._id},process.env.JWT_SECRET,{
+            expiresIn:"3d"
+         })
+        res.cookies("token",token)
+            return res.status(200).json({
+                user:{
+                    _id:user._id,
+                    email:user.email,
+                    name:user.name
+                },
+                token
+            })
+  }catch(err){
+    console.log(err)
+    
+  }
+    
     
     
     }
@@ -58,5 +73,5 @@ async function userSignup(req,res){
 
 
 module.exports={
-    userRegistration
+    userRegistration,userSignup
 }
